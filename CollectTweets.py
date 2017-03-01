@@ -111,7 +111,6 @@ def removeStopWords(textInput):
     stopWords.append(now.year)
     stopWords.append('2')
     stopWords.append('3d')
-    stopWords.append('la')
     wordsList = textInput.split()
     for word in wordsList:
         try:

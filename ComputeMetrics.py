@@ -34,7 +34,7 @@ cPrime = sets.Set()
 #random Sample file with query and positive keys
 randomSampleFile = 'cleanRandomSampleTraining.data'
 #retrieved tweets file
-retrievedTweetsFile = 'cleanRandomSampleTraining.data'
+retrievedTweetsFile = 'cleanRetrievedTraining.data'
 apiRecall = 0
 qualityPrecision = 0
 qualityRecall = 0
