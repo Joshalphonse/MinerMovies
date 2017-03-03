@@ -6,76 +6,51 @@ Created on Wed Mar 01 08:41:00 2017
 """
 
 import json, sets, matplotlib.pyplot as plt
-#retrieved tweets
-m = []
-#retrieved tweets in dPrime
-mPrime = sets.Set()
-#retrieved positive tweets
-aPrime = sets.Set()
-#tweets in random sample match query
-nPrime = sets.Set()
-#tweets in random sample match query and are positive
-bPrime = sets.Set()
-#random sample that doesn't mathch query
-dPrime = []
-dPrimeSet = sets.Set()
-#random sample that doesn't match query and is positive
-cPrime = sets.Set()
-#random Sample file with query and positive keys
-randomSampleFile = 'cleanRandomSampleTraining.data'
-#retrieved tweets file
-retrievedTweetsFile = 'cleanRetrievedTraining.data'
+#All tweets in random sample classified manually
+dPrime =[]
+#Populate retrieved tweets.  All retrieved tweets
+retrievedTweets = []
+#List of positive tweets
+positiveTweetList =[]
+#List of negative tweets
+negativeTweetList =[]
+#random Sample file with query and positive keys populated manually
+randomSampleFile = 'randomSampleTraining.data'
+#retrieved tweets with query and positive keys populated manually
+retrievedTweetFile = 'retrievedTrainingData.data'
 
 def populateDprime():
     global dPrime
+    global retrievedTweets
     with open(randomSampleFile) as file:
         tweetsFile = file.readlines()
         dPrime = json.loads(tweetsFile[0])
-
-def populateMprimeAprime():
-    global mPrime
-    global aPrime
-    tweetsFound = []
-    with open(retrievedTweetsFile) as file:
-        tweetsFile = file.readlines()
-        tweetsFound = json.loads(tweetsFile[0])
-    for allTweets in dPrime:
-        for foundTweet in tweetsFound:
-            if(allTweets['id'] == foundTweet['id']):
-                if(allTweets['positive'] == 'true'):
-                    aPrime.add(foundTweet['text'])
-                else:
-                    mPrime.add(foundTweet['text'])    
+    with open(retrievedTweetFile) as file2:
+        retrievedTweetsFile = file2.readlines()
+        retrievedTweets = json.loads(retrievedTweetsFile[0]) 
 
 def populateSets():
-    global nPrime
-    global bPrime
-    global cPrime
-    global dPrimeSet
+    positiveTweets = sets.Set()
+    negativeTweets = sets.Set()
+    global positiveTweetList
+    global negativeTweetList
     
     for tweet in dPrime:
-        if(tweet['query'] == 'true'):
-            if (tweet['positive'] == 'true'):
-                bPrime.add(tweet['text'])
-            else:
-                nPrime.add(tweet['text'])
+        if (tweet['positive'] == 'true'):
+            positiveTweets.add(tweet['text'])
         else:
-            if(tweet['positive'] == 'true'):
-                cPrime.add(tweet['text'])
-            else:
-                dPrimeSet.add(tweet['text'])
-    #Remove elements of mPrime from nPrime and aPrime from bPrime.
-    nPrime = nPrime.difference(mPrime)
-    bPrime = bPrime.difference(aPrime)
+            negativeTweets.add(tweet['text'])
+    for tweets in retrievedTweets:
+        if (tweets['positive'] == 'true'):
+            positiveTweets.add(tweets['text'])
+        else:
+            negativeTweets.add(tweets['text'])
+    positiveTweetList = list(positiveTweets)
+    negativeTweetList = list(negativeTweets)
 
 def histogramPositiveLengthCount():
     wordCount=[] 
-    tweets = sets.Set()
-    tweets.update(aPrime)
-    tweets.update(bPrime)
-    tweets.update(cPrime)
-    iterableTweets = list(tweets)
-    for tweet in iterableTweets:
+    for tweet in positiveTweetList:
         wordCount.append(len(tweet))
     plt.hist(wordCount)
     plt.title("Length of Positive Tweets")
@@ -84,12 +59,7 @@ def histogramPositiveLengthCount():
 
 def histogramNegativeLengthCount():
     wordCount=[] 
-    tweets = sets.Set()
-    tweets.update(nPrime)
-    tweets.update(mPrime)
-    tweets.update(dPrimeSet)
-    iterabletTweets = list(tweets)
-    for tweet in iterabletTweets:
+    for tweet in negativeTweetList:
         wordCount.append(len(tweet))
     plt.hist(wordCount)
     plt.title("Length of Negative Tweets")
@@ -104,12 +74,8 @@ def histogramPositiveQueryTermCount():
         queryTerms = json.loads(queryFile[0])
     queryString = ' '.join(queryTerms)
     queryString = queryString.lower()
-    tweets = sets.Set()
-    tweets.update(aPrime)
-    tweets.update(bPrime)
-    tweets.update(cPrime)
-    iterableTweets = list(tweets)
-    for tweet in iterableTweets:
+
+    for tweet in positiveTweetList:
         count = 0
         for word in tweet:
             if word.lower() in queryString:
@@ -128,18 +94,12 @@ def histogramNegativeQueryTermCount():
         queryTerms = json.loads(queryFile[0])
     queryString = ' '.join(queryTerms)
     queryString = queryString.lower()
-    tweets = sets.Set()
-    tweets.update(nPrime)
-    tweets.update(mPrime)
-    tweets.update(dPrimeSet)
-    iterableTweets = list(tweets)
-    for tweet in iterableTweets:
+    for tweet in negativeTweetList:
         count = 0
         for word in tweet:
             if word.lower() in queryString:
                 count = count+1
         queryCount.append(count)
-    print queryCount
     plt.hist(queryCount)
     plt.title("Number of Query Terms in Negative Tweets")
     plt.xlabel("Number of query terms in Tweets")
@@ -147,7 +107,6 @@ def histogramNegativeQueryTermCount():
 
 if __name__ == '__main__':
     populateDprime()
-    populateMprimeAprime()
     populateSets()
 #    histogramPositiveLengthCount()
 #    histogramNegativeLengthCount()

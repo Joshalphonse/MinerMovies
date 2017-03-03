@@ -26,9 +26,11 @@ access_token_secret='omcKXM1kOJOIMDclejLqdY8xwCwdmwgGPjnTpCAc90OW6'
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token_key, access_token_secret)
 myApi = tweepy.API(auth)
-movieList = []
 numberOfResults = 1000
 tweetList = []
+queryFile = 'query.data'
+retrievedFile = 'retrievedTweets.data'
+randomSampleFile = 'randomSampleTweets.data'
 ###############################################################################
 
 #==============================================================================
@@ -47,17 +49,19 @@ movieUrl = showtimesUrl + parameters
 
 #Retrieve Tweets based on current movie titles         
 def rest_query_movieTitlesTweets():
-    global movieList
     numMovies = 1
-    if(len(movieList) > 1):
-        numMovies = len(movieList)
+    with open(queryFile) as file:
+        movieWordsFile = file.readlines()
+        movieWords = json.loads(movieWordsFile[0])
+    if(len(movieWords) > 1):
+        numMovies = len(movieWords)
     resultCount = numberOfResults / numMovies
     numRepititions = resultCount / 100    
     if(numRepititions < 1):
         numRepititions = 1
-    for movieTitle in movieList:
+    for movieTitle in movieWords:
         addTweets(movieTitle, numRepititions)
-    with open("retrievedTweets.data", 'w') as file:
+    with open(retrievedFile, 'w') as file:
         file.write(json.dumps(tweetList))
             
 #Add tweets to list
@@ -78,7 +82,6 @@ def addTweets(queryString, numRepititions):
 def rest_query_movieTitle():
     request = urllib2.Request(movieUrl)
     movieSet = sets.Set()
-    global movieList
     movieDictionary = dict()
     global queryList
     try:
@@ -88,12 +91,11 @@ def rest_query_movieTitle():
     except urllib2.URLError, e:
         print 'Error connecting to Movie API: ' , e
     for movie in movieDictionary:
-        title = removeStopWords(removePunctuation(movie['title']))
-        wordsInTitle = title.split()
-        for words in wordsInTitle:
+        title = removeStopWords(removePunctuation(movie['title'].lower()))
+        for words in title:
             movieSet.add(words) 
     movieList = list(movieSet)
-    with open("query.data", 'w') as file:
+    with open(queryFile, 'w') as file:
         file.write(json.dumps(movieList))  
     
 
@@ -114,11 +116,11 @@ def removeStopWords(textInput):
     wordsList = textInput.split()
     for word in wordsList:
         try:
-            stopWords.index(word.lower())
+            stopWords.index(word)
             wordsList.remove(word)
         except Exception:
             pass
-    return ' '.join(wordsList)
+    return wordsList
     
 
 #Retrieve Random Sample
@@ -134,7 +136,7 @@ def rest_query_randomSample():
             MAX_ID = tweets[-1].id
             for tweet in tweets:
                 tweetList.append(convertTweepyObjToDict(tweet))
-    with open("randomSampleTweets.data", 'w') as file:
+    with open(randomSampleFile, 'w') as file:
         file.write(json.dumps(tweetList))       
 
 def convertTweepyObjToDict(tweepyObject):
