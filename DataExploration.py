@@ -5,7 +5,7 @@ Created on Wed Mar 01 08:41:00 2017
 @author: cglynn
 """
 
-import json, sets, matplotlib.pyplot as plt
+import json, sets, matplotlib.pyplot as plt, numpy as np
 #All tweets in random sample classified manually
 dPrime =[]
 #Populate retrieved tweets.  All retrieved tweets
@@ -18,6 +18,10 @@ negativeTweetList =[]
 randomSampleFile = 'randomSampleTraining.data'
 #retrieved tweets with query and positive keys populated manually
 retrievedTweetFile = 'retrievedTrainingData.data'
+#Attribute array of tweet lengths.  [Positive, negative]
+tweetLength = []
+#Attribute array of tweet query term counts [Postivie, negative]
+tweetQueryTermCount = [] 
 
 def populateDprime():
     global dPrime
@@ -48,67 +52,136 @@ def populateSets():
     positiveTweetList = list(positiveTweets)
     negativeTweetList = list(negativeTweets)
 
-def histogramPositiveLengthCount():
-    wordCount=[] 
-    for tweet in positiveTweetList:
-        wordCount.append(len(tweet))
-    plt.hist(wordCount)
-    plt.title("Length of Positive Tweets")
-    plt.xlabel("Length of Tweets")
-    plt.ylabel("Number of Tweets")
-
-def histogramNegativeLengthCount():
-    wordCount=[] 
-    for tweet in negativeTweetList:
-        wordCount.append(len(tweet))
-    plt.hist(wordCount)
-    plt.title("Length of Negative Tweets")
-    plt.xlabel("Length of Tweets")
-    plt.ylabel("Number of Tweets")
-
-def histogramPositiveQueryTermCount():
-    queryCount=[] 
-    queryTerms = []
-    with open('query.data') as file:
-        queryFile = file.readlines()
-        queryTerms = json.loads(queryFile[0])
-    queryString = ' '.join(queryTerms)
-    queryString = queryString.lower()
-
-    for tweet in positiveTweetList:
-        count = 0
-        for word in tweet:
-            if word.lower() in queryString:
-                count = count+1
-        queryCount.append(count)
-    plt.hist(queryCount)
-    plt.title("Number of Query Terms in Positive Tweets")
-    plt.xlabel("Number of query terms in Tweets")
-    plt.ylabel("Number of Tweets")
+def populateAttributes():
+    global tweetLength
+    global tweetQueryTermCount 
     
-def histogramNegativeQueryTermCount():
-    queryCount=[] 
+#    Populate tweetLength attributes [positive, negative]
+    positiveLengthCount=[]
+    negativeLengthCount = []
+    for tweet in positiveTweetList:
+        positiveLengthCount.append(len(tweet))
+    for tweet in negativeTweetList:
+        negativeLengthCount.append(len(tweet))
+    tweetLength.append(positiveLengthCount)
+    tweetLength.append(negativeLengthCount)
+    
+# Populate tweet query term count attribute [positive, negative]  
+    positiveQueryCount=[] 
+    negativeQueryCount=[] 
     queryTerms = []
     with open('query.data') as file:
         queryFile = file.readlines()
         queryTerms = json.loads(queryFile[0])
-    queryString = ' '.join(queryTerms)
-    queryString = queryString.lower()
+    
+    for tweet in positiveTweetList:
+        wordList = tweet.split()
+        count=0
+        for word in wordList:
+            for term in queryTerms:
+                if word.lower() in term.lower():
+                    count = count+1
+        positiveQueryCount.append(count)
+    tweetQueryTermCount.append(positiveQueryCount)
+    
     for tweet in negativeTweetList:
-        count = 0
-        for word in tweet:
-            if word.lower() in queryString:
-                count = count+1
-        queryCount.append(count)
-    plt.hist(queryCount)
-    plt.title("Number of Query Terms in Negative Tweets")
+        wordList = tweet.split()
+        count=0
+        for word in wordList:
+            for term in queryTerms:
+                if word.lower() in term.lower():
+                    count = count+1
+        negativeQueryCount.append(count)
+    tweetQueryTermCount.append(negativeQueryCount)
+
+def calculateSummaryStatistics():
+#Summary of statistics: Mean, Standard Deviation (STD), Median, Median
+#Absolute Deviation (MAD), Max, and Min.
+    print 'Positive Tweet Length Mean: ', np.mean(tweetLength[0])
+    print 'Negative Tweet Length Mean: ', np.mean(tweetLength[1])
+    print 'Positive Tweet Length STD: ', np.std(tweetLength[0])
+    print 'Negative Tweet Length STD: ', np.std(tweetLength[1])
+    print 'Positive Tweet Length Max: ', np.max(tweetLength[0])
+    print 'Negative Tweet Length Max: ', np.max(tweetLength[1])
+    print 'Positive Tweet Length Min: ', np.min(tweetLength[0])
+    print 'Negative Tweet Length Min: ', np.min(tweetLength[1])
+    positiveMedian = np.median(tweetLength[0])
+    negativeMedian = np.median(tweetLength[1])
+    print 'Positive Tweet Length Median: ', positiveMedian
+    print 'Negative Tweet Length Median: ', negativeMedian
+    print "MAD Positive Tweet Length :", np.median([abs(x - positiveMedian) for x in tweetLength[0]])
+    print "MAD Negative Tweet Length :", np.median([abs(x - negativeMedian) for x in tweetLength[1]])
+    
+    print 'Positive Tweet Query Count Mean: ', np.mean(tweetQueryTermCount [0])
+    print 'Negative Tweet Query Count Mean: ', np.mean(tweetQueryTermCount [1])
+    print 'Positive Tweet Query Count STD: ', np.std(tweetQueryTermCount [0])
+    print 'Negative Tweet Query Count STD: ', np.std(tweetQueryTermCount [1])
+    print 'Positive Tweet Query Count Max: ', np.max(tweetQueryTermCount [0])
+    print 'Negative Tweet Query Count Max: ', np.max(tweetQueryTermCount [1])
+    print 'Positive Tweet Query Count Min: ', np.min(tweetQueryTermCount [0])
+    print 'Negative Tweet Query Count Min: ', np.min(tweetQueryTermCount [1])
+    positiveMedian = np.median(tweetQueryTermCount [0])
+    negativeMedian = np.median(tweetQueryTermCount [1])
+    print 'Positive Tweet Query Count Median: ', positiveMedian
+    print 'Negative Tweet Query Count Median: ', negativeMedian
+    print "MAD Positive Tweet Query Count :", np.median([abs(x - positiveMedian) for x in tweetQueryTermCount[0]])
+    print "MAD Negative Tweet Query Count :", np.median([abs(x - negativeMedian) for x in tweetQueryTermCount[1]])
+
+def histogramTweetLengthCount():
+    colors = ['green', 'crimson']
+    labels = ['Positive Tweets', 'Negative Tweets']
+    plt.figure(1)
+    plt.hist(tweetLength, 30, histtype='bar', color=colors, label = labels)
+    plt.title("Tweet Lengths")
+    plt.xlabel("Length of Tweets")
+    plt.ylabel("Number of Tweets (up to 50)")
+    plt.legend()
+    plt.ylim(0,50)
+    plt.savefig('tweetLengthHistogram.jpg')
+
+def histogramQueryTermCount():
+    plt.figure(3)
+    colors = ['green', 'crimson']
+    labels = ['Positive Tweets', 'Negative Tweets']
+    plt.hist(tweetQueryTermCount, 30, histtype='bar', color=colors, label=labels)
+    plt.title("Number of Query Terms in Tweets")
     plt.xlabel("Number of query terms in Tweets")
-    plt.ylabel("Number of Tweets")
+    plt.ylabel("Number of Tweets (Up to 50)")
+    plt.legend()
+    plt.ylim(0,50)
+    plt.savefig('tweetQueryTermHistogram.jpg')
+    
+def scatterPlotTermCountVsLength():
+    plt.figure(4)
+    plt.scatter(tweetQueryTermCount[0], tweetLength[0], color='green' ,s=200)
+    plt.scatter(tweetQueryTermCount[1], tweetLength[1], color='red', s=50)
+    plt.suptitle('Query Term Count Vs Tweet Length')
+    plt.xlabel('Query Term Count')
+    plt.ylabel('Tweet Length')
+    plt.show()
+    plt.savefig('tweetLengthQueryTermScatter.jpg')
+    
+def boxPlotTweetLength():
+    plt.figure(5)
+    plt.title("Tweet Length")
+    labels = ['Positive Tweets','Negative Tweets']
+    plt.boxplot(tweetLength, labels=labels, showfliers='true')
+    plt.savefig('tweetLengthBoxPlot.jpg')
+    
+def boxPlotQueryTermCount():
+    plt.figure(6)
+    plt.title("Number of Query Terms")
+    labels = ['Positive Tweets','Negative Tweets']
+    plt.boxplot(tweetQueryTermCount, labels=labels, showfliers='true')
+    plt.savefig('tweetQueryTermBoxPlot.jpg')
 
 if __name__ == '__main__':
     populateDprime()
     populateSets()
-#    histogramPositiveLengthCount()
-#    histogramNegativeLengthCount()
-#    histogramPositiveQueryTermCount()
-    histogramNegativeQueryTermCount()
+    populateAttributes()
+    calculateSummaryStatistics()
+    histogramTweetLengthCount()
+    histogramQueryTermCount()
+    scatterPlotTermCountVsLength()
+    boxPlotTweetLength()
+    boxPlotQueryTermCount()
