@@ -175,6 +175,26 @@ def boxPlotQueryTermCount():
     plt.boxplot(tweetQueryTermCount, labels=labels, showfliers='true')
     plt.savefig('tweetQueryTermBoxPlot.jpg')
 
+def heatMapPositiveTweets():
+    fig = plt.figure(7, figsize=(7,3))
+    x = np.asarray(tweetQueryTermCount[0])
+    y = np.asarray(tweetLength[0])
+    H, xedges, yedges = np.histogram2d(x , y, bins = 6)
+    H = H.T
+    fig.add_subplot(132, title='Positive Tweets', aspect='equal')
+    plt.imshow(H, interpolation='nearest' , origin='low', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
+    plt.savefig('heatMapPositiveTweet.jpg')
+
+def heatMapNegativeTweets():
+    fig = plt.figure(8, figsize=(7,3))
+    x = np.asarray(tweetQueryTermCount[1])
+    y = np.asarray(tweetLength[1])
+    H, xedges, yedges = np.histogram2d(x , y, bins = 6)
+    H = H.T
+    fig.add_subplot(132, title='Negative Tweets', aspect='equal')
+    plt.imshow(H, interpolation='nearest' , origin='low', extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
+    plt.savefig('heatMapNegativeTweet.jpg')
+
 if __name__ == '__main__':
     populateDprime()
     populateSets()
@@ -185,3 +205,5 @@ if __name__ == '__main__':
     scatterPlotTermCountVsLength()
     boxPlotTweetLength()
     boxPlotQueryTermCount()
+    heatMapPositiveTweets()
+    heatMapNegativeTweets()
