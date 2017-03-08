@@ -101,6 +101,9 @@ def rest_query_movieTitle():
 
 #Remove punctuation
 def removePunctuation(text):
+#    Replace 's and n't    
+    text = text.replace("'s",'')
+    text = text.replace("n't", '')
     for p in string.punctuation:
         text = text.replace(p,'')
     return text
@@ -108,19 +111,20 @@ def removePunctuation(text):
 #Remove Stopwords
 def removeStopWords(textInput):
     import datetime
+    tempText = textInput.split()
     now = datetime.datetime.now()
     stopWords = stop_words.get_stop_words('english')
-    stopWords.append(now.year)
-    stopWords.append('2')
-    stopWords.append('3d')
+    addStopWordsList = [str(now.year), '3d', '2']
+    addStopWords(stopWords, addStopWordsList)
     wordsList = textInput.split()
     for word in wordsList:
         try:
             stopWords.index(word)
-            wordsList.remove(word)
+            tempText.remove(word)
         except Exception:
             pass
-    return wordsList
+    clean_stopWords(stopWords, addStopWordsList)
+    return tempText
     
 
 #Retrieve Random Sample
@@ -162,8 +166,15 @@ def convertTweepyObjToDict(tweepyObject):
 #         ,'place': tweepyObject.place
     }
     
+def clean_stopWords(stopWords, removeStopWordsList):
+    for word in removeStopWordsList:
+        stopWords.remove(word)
+
+def addStopWords(stopWords, addStopWordsList):
+    for word in addStopWordsList:
+        stopWords.append(word)
 
 if __name__ == '__main__':
-    rest_query_randomSample()
+#    rest_query_randomSample()
     rest_query_movieTitle()
-    rest_query_movieTitlesTweets()
+#    rest_query_movieTitlesTweets()
