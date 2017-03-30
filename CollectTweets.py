@@ -31,6 +31,7 @@ tweetList = []
 queryFile = 'query.data'
 retrievedFile = 'retrievedTweets.data'
 randomSampleFile = 'randomSampleTweets.data'
+movieListFile = 'movie.data'
 ###############################################################################
 
 #==============================================================================
