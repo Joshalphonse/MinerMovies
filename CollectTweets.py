@@ -26,7 +26,7 @@ access_token_secret='omcKXM1kOJOIMDclejLqdY8xwCwdmwgGPjnTpCAc90OW6'
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token_key, access_token_secret)
 myApi = tweepy.API(auth)
-numberOfResults = 1000
+numberOfResults = 2000
 tweetList = []
 queryFile = 'query.data'
 retrievedFile = 'retrievedTweets.data'
@@ -70,9 +70,11 @@ def addTweets(queryString, numRepititions):
     geo = "42.6525,-73.7572,9mi" # City of Albany
     MAX_ID = None
     global tweetList
-    tweets = myApi.search(q=queryString, geocode=geo, count=100, max_id = MAX_ID)
+#    tweets = myApi.search(q=queryString, geocode=geo, count=100, max_id = MAX_ID)
+    tweets = myApi.search(q=queryString,  count=100, max_id = MAX_ID)
     for it in range(numRepititions):
-        tweets = myApi.search(q=queryString, geocode=geo, count=100, max_id = MAX_ID)
+#        tweets = myApi.search(q=queryString, geocode=geo, count=100, max_id = MAX_ID)
+        tweets = myApi.search(q=queryString, count=100, max_id = MAX_ID)
         if tweets:
             MAX_ID = tweets[-1].id
             for tweet in tweets:
@@ -93,8 +95,10 @@ def rest_query_movieTitle():
         print 'Error connecting to Movie API: ' , e
     for movie in movieDictionary:
         title = removeStopWords(removePunctuation(movie['title'].lower()))
-        for words in title:
-            movieSet.add(words) 
+#        for words in title:
+#            movieSet.add(words) 
+        movieSet.add(' '.join([str(x) for x in title]))
+    movieSet.discard("")
     movieList = list(movieSet)
     with open(queryFile, 'w') as file:
         file.write(json.dumps(movieList))  
@@ -115,7 +119,7 @@ def removeStopWords(textInput):
     tempText = textInput.split()
     now = datetime.datetime.now()
     stopWords = stop_words.get_stop_words('english')
-    addStopWordsList = [str(now.year), '3d', '2']
+    addStopWordsList = [str(now.year), '3d', '2', 'get']
     addStopWords(stopWords, addStopWordsList)
     wordsList = textInput.split()
     for word in wordsList:
@@ -130,13 +134,15 @@ def removeStopWords(textInput):
 
 #Retrieve Random Sample
 def rest_query_randomSample():
-    numResults = 100
+    numResults = 1000
     geo = "42.6525,-73.7572,9mi" # City of Albany
     MAX_ID = None
     tweetList = []
-    tweets = myApi.search(geocode=geo,count=numResults, max_id = MAX_ID)
+#    tweets = myApi.search(geocode=geo,count=numResults, max_id = MAX_ID)
+    tweets = myApi.search(q="a",count=numResults, max_id = MAX_ID)
     for it in range(20): # Retrieve up to 2000 tweets
-        tweets = myApi.search(geocode=geo,count=numResults, max_id = MAX_ID)
+#        tweets = myApi.search(geocode=geo,count=numResults, max_id = MAX_ID)
+        tweets = myApi.search(q="a",count=numResults, max_id = MAX_ID)
         if tweets:
             MAX_ID = tweets[-1].id
             for tweet in tweets:
@@ -176,6 +182,6 @@ def addStopWords(stopWords, addStopWordsList):
         stopWords.append(word)
 
 if __name__ == '__main__':
-#    rest_query_randomSample()
-    rest_query_movieTitle()
+    rest_query_randomSample()
+#    rest_query_movieTitle()
 #    rest_query_movieTitlesTweets()

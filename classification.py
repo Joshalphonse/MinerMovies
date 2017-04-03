@@ -37,9 +37,11 @@ def classificationTrain():
         queryFile = file.readlines()
         queryTerms = json.loads(queryFile[0])
     for term in queryTerms:
-        queryDictionary[term] = 0
+        terms = term.split()
+        for word in terms:
+            queryDictionary[word] = 0
     
-    # Compute the top num of Features query terms used, top features
+    # Compute the top num of query terms used, top features
     queryTop = []
     trainingList = []
     for trainingTweet in trainingTweets:
@@ -72,20 +74,24 @@ def classificationTrain():
     scores = ['precision', 'recall']
     svr = svm.SVC(C=1)
     for score in scores:
-        print("# Tuning hyper-parameters for %s" % score)
+#        print("# Tuning hyper-parameters for %s" % score)
         clf = GridSearchCV(svr, tuned_parameters, cv=10, scoring='%s_macro' % score)
         clf.fit(featureVector, classVector)
-        print("best parameters %s" % clf.best_params_)
-        means = clf.cv_results_['mean_test_score']
-        stds = clf.cv_results_['std_test_score']
-        for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-            print("Accuracy: %0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
+#        print("best parameters %s" % clf.best_params_)
+#        means = clf.cv_results_['mean_test_score']
+#        stds = clf.cv_results_['std_test_score']
+#        for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+#            print("Accuracy: %0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
+        
+#   Save the best parameters
     global svmBestParameters
-    svmBestParameters = [{'kernel': [clf.best_params_['kernel']] , 'C':[clf.best_params_['C']], 'gamma':[clf.best_params_['gamma']]}]
-#    print svmBestParameters
-    
+    if 'gamma' in clf.best_params_:
+        svmBestParameters = [{'kernel': [clf.best_params_['kernel']] , 'C':[clf.best_params_['C']], 'gamma':[clf.best_params_['gamma']]}]
+    else :
+        svmBestParameters = [{'kernel': [clf.best_params_['kernel']] , 'C':[clf.best_params_['C']]}]
+        
 def classifyTweets():
-    #Read in tweets for classifing from list ['tweet text']
+    #Read in tweets for classifing from list in form ['tweet text']
     tweetsToClassify = []
 
     with open(tweetsToClassifyFile) as file:
@@ -94,17 +100,31 @@ def classifyTweets():
 
     #Generate numpy ndarrays for features
     featureVectorClassify = generateFeatureVector(tweetsToClassify)
+    
+#   Setup Support Vector with previously found parameters. 
     svr = svm.SVC(C=1)
     clf = GridSearchCV(svr, svmBestParameters, cv=10)
     clf.fit(featureVector, classVector)
+    
+#   Calculae Accuracy 
+    means = clf.cv_results_['mean_test_score']
+    stds = clf.cv_results_['std_test_score']
+    for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+        print("Accuracy: %0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
+    
+#   Predict 
     y = clf.predict(featureVectorClassify)
     
-    # print 100 example tweets and their class labels
-    for idx in range(1,100):
-        print 'Tweet Class (1 means positive; 0 means negative): ', y[idx]
-        print 'TEXT: ', idx, tweetsToClassify[idx]
+    # store predictions along with text in an array
+    predictedTweets = []
+    i = 0
+    for prediction in y:
+        predictedTweets.append([prediction, tweetsToClassify[i]])
+        i += 1
     
-    print sum(y), len(y)
+#   Save the predictions to file. 
+    with open("predicted_tweets.txt", 'w') as file:
+        file.write(json.dumps(predictedTweets))
 
 #Returns feature vector given list of tweet text
 def generateFeatureVector(tweetText):
