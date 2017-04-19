@@ -31,7 +31,6 @@ tweetList = []
 queryFile = 'query.data'
 retrievedFile = 'retrievedTweets.data'
 randomSampleFile = 'randomSampleTweets.data'
-movieListFile = 'movie.data'
 ###############################################################################
 
 #==============================================================================
@@ -70,10 +69,10 @@ def addTweets(queryString, numRepititions):
     geo = "42.6525,-73.7572,9mi" # City of Albany
     MAX_ID = None
     global tweetList
-#    tweets = myApi.search(q=queryString, geocode=geo, count=100, max_id = MAX_ID)
+    tweets = myApi.search(q=queryString, geocode=geo, count=100, max_id = MAX_ID)
     tweets = myApi.search(q=queryString,  count=100, max_id = MAX_ID)
     for it in range(numRepititions):
-#        tweets = myApi.search(q=queryString, geocode=geo, count=100, max_id = MAX_ID)
+        tweets = myApi.search(q=queryString, geocode=geo, count=100, max_id = MAX_ID)
         tweets = myApi.search(q=queryString, count=100, max_id = MAX_ID)
         if tweets:
             MAX_ID = tweets[-1].id
@@ -94,9 +93,7 @@ def rest_query_movieTitle():
     except urllib2.URLError, e:
         print 'Error connecting to Movie API: ' , e
     for movie in movieDictionary:
-        title = removeStopWords(removePunctuation(movie['title'].lower()))
-#        for words in title:
-#            movieSet.add(words) 
+        title = removeStopWords(removePunctuation(movie['title'].lower())) 
         movieSet.add(' '.join([str(x) for x in title]))
     movieSet.discard("")
     movieList = list(movieSet)
@@ -138,10 +135,10 @@ def rest_query_randomSample():
     geo = "42.6525,-73.7572,9mi" # City of Albany
     MAX_ID = None
     tweetList = []
-#    tweets = myApi.search(geocode=geo,count=numResults, max_id = MAX_ID)
+    tweets = myApi.search(geocode=geo,count=numResults, max_id = MAX_ID)
     tweets = myApi.search(q="a",count=numResults, max_id = MAX_ID)
     for it in range(20): # Retrieve up to 2000 tweets
-#        tweets = myApi.search(geocode=geo,count=numResults, max_id = MAX_ID)
+        tweets = myApi.search(geocode=geo,count=numResults, max_id = MAX_ID)
         tweets = myApi.search(q="a",count=numResults, max_id = MAX_ID)
         if tweets:
             MAX_ID = tweets[-1].id
@@ -181,7 +178,7 @@ def addStopWords(stopWords, addStopWordsList):
     for word in addStopWordsList:
         stopWords.append(word)
 
-if __name__ == '__main__':
-    rest_query_randomSample()
+#if __name__ == '__main__':
+#    rest_query_randomSample()
 #    rest_query_movieTitle()
 #    rest_query_movieTitlesTweets()
