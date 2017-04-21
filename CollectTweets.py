@@ -3,9 +3,12 @@
 Created on Wed Feb 15 08:52:26 2017
 
 @author: cglynn
-Collect Tweets including current Video names store to file retrievedTweets.data
+Collect Tweets and stores retrieved tweets to retrievedFile
+
+Retrieve Query data.  Collect current movie list and process for querying and
+save to quryFile.
+
 Collect Random Sample of Tweets and store to file randomSampleTweets.data
-Query terms saved to query.data
 """
 
 # -*- coding: utf-8 -*-
@@ -26,7 +29,7 @@ access_token_secret='omcKXM1kOJOIMDclejLqdY8xwCwdmwgGPjnTpCAc90OW6'
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token_key, access_token_secret)
 myApi = tweepy.API(auth)
-numberOfResults = 2000
+numberOfResults = 3000
 tweetList = []
 queryFile = 'query.data'
 retrievedFile = 'retrievedTweets.data'
@@ -37,7 +40,6 @@ randomSampleFile = 'randomSampleTweets.data'
 # Setup Gracenot API for current movie titles
 #Allows up to 50 calls per day; 2 calls per second.
 #==============================================================================
-#consumer_key = 'cuscgszmmfg3cwenss7bj273'
 consumer_key = 'wxsswsn7m4zhy823g957jbp4'
 baseUrl = "http://data.tmsapi.com/v1.1"
 showtimesUrl = baseUrl + '/movies/showings?'
@@ -86,6 +88,7 @@ def rest_query_movieTitle():
     movieSet = sets.Set()
     movieDictionary = dict()
     global queryList
+    rootIds = []  # used to not duplicate movie titles.
     try:
         response = urllib2.urlopen(request)
         movies = response.read()
@@ -93,9 +96,12 @@ def rest_query_movieTitle():
     except urllib2.URLError, e:
         print 'Error connecting to Movie API: ' , e
     for movie in movieDictionary:
-        title = removeStopWords(removePunctuation(movie['title'].lower())) 
-        movieSet.add(' '.join([str(x) for x in title]))
-    movieSet.discard("")
+        if movie['rootId'] not in rootIds:
+            rootIds.append(movie['rootId'])
+            title = removeStopWords(removePunctuation(movie['title'].lower()))
+            title.append('movie')
+            if len(title) > 1: #Ensure more than one word in title.
+                movieSet.add(' '.join([str(x) for x in title]))
     movieList = list(movieSet)
     with open(queryFile, 'w') as file:
         file.write(json.dumps(movieList))  
@@ -116,7 +122,7 @@ def removeStopWords(textInput):
     tempText = textInput.split()
     now = datetime.datetime.now()
     stopWords = stop_words.get_stop_words('english')
-    addStopWordsList = [str(now.year), '3d', '2', 'get']
+    addStopWordsList = [str(now.year), '3d', '2', 'get', 'movie']
     addStopWords(stopWords, addStopWordsList)
     wordsList = textInput.split()
     for word in wordsList:
@@ -178,7 +184,7 @@ def addStopWords(stopWords, addStopWordsList):
     for word in addStopWordsList:
         stopWords.append(word)
 
-#if __name__ == '__main__':
+if __name__ == '__main__':
 #    rest_query_randomSample()
-#    rest_query_movieTitle()
-#    rest_query_movieTitlesTweets()
+    rest_query_movieTitle()
+    rest_query_movieTitlesTweets()
