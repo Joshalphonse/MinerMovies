@@ -2,10 +2,12 @@
 """
 Created on Tue Mar 28 15:10:39 2017
 
-Classify based following features.
+Classify based on the following features.
 
 Number of Query Terms
 Tweet Length
+
+Saves all positive tweets, class 1, to tweetsToCluster file.
 
 @author: cglynn
 """
@@ -16,7 +18,8 @@ from sklearn import svm
 
 training_File = 'labeled_tweets.txt'
 query_terms_File = 'query.data'
-tweetsToClassifyFile = 'unlabeled_tweets.txt'
+tweetsToClassifyFile = 'retrievedTweets.data'
+tweetsToClusterFile = 'cluster_tweets.txt'
 num_features = 2
 classVector = []
 featureVector = []
@@ -41,19 +44,19 @@ def classifyTweets():
         for word in terms:
             queryDictionary[word] = 0
     
-    # Create the training list of tweets
-    trainingList = []
-    for trainingTweet in trainingTweets:
-        trainingData = trainingTweet.split(',')
-        trainingList.append(trainingData)
+#    # Create the training list of tweets
+#    trainingList = []
+#    for trainingTweet in trainingTweets:
+#        trainingData = trainingTweet.split(',')
+#        trainingList.append(trainingData)
             
     #Generate numpy ndarrays for features and classes
-    classVector = np.zeros((len(trainingList),), (int))
+    classVector = np.zeros((len(trainingTweets),), (int))
     tweetText = []
     row = 0
-    for tweet in trainingList:
-        tweetText.append(tweet[1])
-        classVector[row] = tweet[0]
+    for tweet in trainingTweets:
+        tweetText.append(tweet['text'])
+        classVector[row] = tweet['positive']
         row += 1
     featureVector = generateFeatureVector(tweetText)   
     
@@ -83,13 +86,17 @@ def classifyTweets():
         
     #Read in tweets for classifing from list in form ['tweet text']
     tweetsToClassify = []
+    tweetTextToClassify = []
     
     with open(tweetsToClassifyFile) as file:
         tweetsFile = file.readlines()
         tweetsToClassify = json.loads(tweetsFile[0])
     
+    for tweet in tweetsToClassify:
+        tweetTextToClassify.append(tweet['text'])
+    
     #Generate numpy ndarrays for features
-    featureVectorClassify = generateFeatureVector(tweetsToClassify)
+    featureVectorClassify = generateFeatureVector(tweetTextToClassify)
     
     #   Setup Support Vector with previously found parameters. 
     svr = svm.SVC(C=1)
@@ -105,15 +112,16 @@ def classifyTweets():
     #   Predict 
     y = clf.predict(featureVectorClassify)
     
-    # store predictions along with text in an array
+    # store positive predictd tweet text to array
     predictedTweets = []
     i = 0
     for prediction in y:
-        predictedTweets.append([prediction, tweetsToClassify[i]])
+        if prediction == 1:
+            predictedTweets.append([tweetsToClassify[i]['id'],tweetTextToClassify[i]])
         i += 1
     
     #   Save the predictions to file. 
-    with open("predicted_tweets.txt", 'w') as file:
+    with open(tweetsToClusterFile, 'w') as file:
         file.write(json.dumps(predictedTweets))
 
 #Returns feature vector given list of tweet text

@@ -3,12 +3,19 @@
 Created on Wed Feb 15 08:52:26 2017
 
 @author: cglynn
-Collect Tweets and stores retrieved tweets to retrievedFile
 
-Retrieve Query data.  Collect current movie list and process for querying and
-save to quryFile.
+rest_query_movieTitle()
+Retrieves Query data.  Collect current movie list for zip code and process 
+    for querying and save to queryFile.  Removes stop words and punctuation from movie titles.
 
-Collect Random Sample of Tweets and store to file randomSampleTweets.data
+rest_query_movieTitlesTweets()
+Collect Tweets retrieved when searching on movie titles for a specific zip code.  
+    Saves collected tweets in retrievedFile.  Tweets saved in list have the form
+    [text, id, id_str, created_at]  
+
+rest_query_randomSample()
+Collect Random Sample of Tweets and save to randomSampleFile.  Tweets are stored
+    as a list in the form [text, id, id_str, created_at]  
 """
 
 # -*- coding: utf-8 -*-
@@ -137,13 +144,13 @@ def removeStopWords(textInput):
 
 #Retrieve Random Sample
 def rest_query_randomSample():
-    numResults = 1000
+    numResults = 3000
     geo = "42.6525,-73.7572,9mi" # City of Albany
     MAX_ID = None
     tweetList = []
     tweets = myApi.search(geocode=geo,count=numResults, max_id = MAX_ID)
     tweets = myApi.search(q="a",count=numResults, max_id = MAX_ID)
-    for it in range(20): # Retrieve up to 2000 tweets
+    for it in range(20): 
         tweets = myApi.search(geocode=geo,count=numResults, max_id = MAX_ID)
         tweets = myApi.search(q="a",count=numResults, max_id = MAX_ID)
         if tweets:
@@ -155,21 +162,21 @@ def rest_query_randomSample():
 
 def convertTweepyObjToDict(tweepyObject):
     return {
-         'contributors': tweepyObject.contributors, 
-         'truncated': tweepyObject.truncated, 
+#         'contributors': tweepyObject.contributors, 
+#         'truncated': tweepyObject.truncated, 
          'text': tweepyObject.text,
 #         'in_reply_to_status_id': tweepyObject.in_reply_to_status_id,
          'id': tweepyObject.id,
-         'retweeted': tweepyObject.retweeted,
-         'coordinates': tweepyObject.coordinates,
-         'source': tweepyObject.source,
+#         'retweeted': tweepyObject.retweeted,
+#         'coordinates': tweepyObject.coordinates,
+#         'source': tweepyObject.source,
 #         'in_reply_to_screen_name': tweepyObject.in_reply_to_screen_name,
          'id_str': tweepyObject.id_str,
-         'retweet_count': tweepyObject.retweet_count,
+#         'retweet_count': tweepyObject.retweet_count,
 #         'in_reply_to_user_id': tweepyObject.in_reply_to_user_id,
-         'favorited': tweepyObject.favorited,
-         'source_url': tweepyObject.source_url, 
-         'geo': tweepyObject.geo, 
+#         'favorited': tweepyObject.favorited,
+#         'source_url': tweepyObject.source_url, 
+#         'geo': tweepyObject.geo, 
 #         'in_reply_to_user_id_str': tweepyObject.in_reply_to_user_id_str, 
          'created_at': str(tweepyObject.created_at), 
 #         'in_reply_to_status_id_str': tweepyObject.in_reply_to_status_id_str
@@ -185,6 +192,6 @@ def addStopWords(stopWords, addStopWordsList):
         stopWords.append(word)
 
 if __name__ == '__main__':
-#    rest_query_randomSample()
+    rest_query_randomSample()
     rest_query_movieTitle()
     rest_query_movieTitlesTweets()
