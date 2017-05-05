@@ -17,7 +17,7 @@ getMovieTitles()
 getTweets()
 
 #Classify relative tweets
-classifyTweets()
+classifyTweets('retrievedTweets.data', 'true')
 
 #Cluster Tweets
 cluster_tweets(clusterType)  
