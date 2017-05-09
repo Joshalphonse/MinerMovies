@@ -20,6 +20,6 @@ getTweets()
 classifyTweets('retrievedTweets.data', 'true')
 
 #Cluster Tweets
-cluster_tweets(clusterType)  
+largestCluster = cluster_tweets(clusterType)  
 
 #Compute Most Popular movie

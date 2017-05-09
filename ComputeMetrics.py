@@ -32,9 +32,9 @@ dPrimeSet = sets.Set()
 #random sample that doesn't match query and is positive
 cPrime = sets.Set()
 #random Sample file with query and positive keys
-randomSampleFile = 'cleanRandomSampleTraining.data'
+randomSampleFile = 'cleanRandomSample.data'
 #retrieved tweets file
-retrievedTweetsFile = 'cleanRetrievedTraining.data'
+retrievedTweetsFile = 'cleanRetrieved.data'
 apiRecall = 0
 qualityPrecision = 0
 qualityRecall = 0

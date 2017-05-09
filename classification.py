@@ -9,6 +9,16 @@ Tweet Length
 
 Saves all positive tweets, class 1, to tweetsToCluster file.
 
+classifyTrain() method saves the Best Parameters to svmBestParametersFile to be 
+    used when classifying.
+
+classifyTweets(tweetsToClassifyFile, forClustering)
+    tweetsToClassifyFile: File of tweets to classify. 
+    forClustering: Will clustering occur next or not.  For clustering only
+        positive class tweets are saved to tweetsToClusterFile.  If false, positive
+        and negative tweets saved to cleanRandomSampleTraining.data for computing 
+        metrics and data exploration.
+        
 @author: cglynn
 """
 
@@ -33,14 +43,8 @@ def classifyTrain():
     scores = ['precision', 'recall']
     svr = svm.SVC(C=1)
     for score in scores:
-    #        print("# Tuning hyper-parameters for %s" % score)
         clf = GridSearchCV(svr, tuned_parameters, cv=10, scoring='%s_macro' % score)
         clf.fit(trainingVectors[0], trainingVectors[1])
-    #        print("best parameters %s" % clf.best_params_)
-    #        means = clf.cv_results_['mean_test_score']
-    #        stds = clf.cv_results_['std_test_score']
-    #        for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-    #            print("Accuracy: %0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
         
     #   Save the best parameters
     svmBestParameters = []
@@ -84,12 +88,6 @@ def classifyTweets(tweetsToClassifyFile, forClustering):
     svr = svm.SVC(C=1)
     clf = GridSearchCV(svr, svmBestParameters, cv=10)
     clf.fit(trainingVectors[0], trainingVectors[1])
-    
-    #   Calculae Accuracy 
-#    means = clf.cv_results_['mean_test_score']
-#    stds = clf.cv_results_['std_test_score']
-#    for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-#        print("Accuracy: %0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
     
     #   Predict 
     y = clf.predict(featureVectorClassify)

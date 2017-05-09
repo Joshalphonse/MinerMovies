@@ -9,11 +9,12 @@ quality recall, and quality precision.
 
 Necessary Files
 retrieved tweets from file retrievedTweets.data
-Tweets from random sample from file: randomSampleTweets.data
+Tweets from random sample from file: cleanRandomSampleTraining.data created from 
+    classification.
 """
 import json
 
-dPrimeFile = 'randomSampleTweets.data'
+dPrimeFile = 'cleanRandomSampleTraining.data'
 mFile = 'retrievedTweets.data'
 query_terms_File = 'query.data'
 
@@ -32,10 +33,9 @@ def populateDprimeMprime():
         tweetsFile = file.readlines()
         tweetsFound = json.loads(tweetsFile[0])
         
-#Add labels for query and positive.  Label found tweets as matching the query.
+#Add labels for query.  Label found tweets as matching the query.
     for allTweets in dPrime:
         allTweets['query'] = 'false'
-        allTweets['positive'] = 'false'
         for foundTweet in tweetsFound:
             if(allTweets['id'] == foundTweet['id']):
                 mPrime.append(foundTweet)

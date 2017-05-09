@@ -162,25 +162,10 @@ def rest_query_randomSample():
 
 def convertTweepyObjToDict(tweepyObject):
     return {
-#         'contributors': tweepyObject.contributors, 
-#         'truncated': tweepyObject.truncated, 
          'text': tweepyObject.text,
-#         'in_reply_to_status_id': tweepyObject.in_reply_to_status_id,
          'id': tweepyObject.id,
-#         'retweeted': tweepyObject.retweeted,
-#         'coordinates': tweepyObject.coordinates,
-#         'source': tweepyObject.source,
-#         'in_reply_to_screen_name': tweepyObject.in_reply_to_screen_name,
          'id_str': tweepyObject.id_str,
-#         'retweet_count': tweepyObject.retweet_count,
-#         'in_reply_to_user_id': tweepyObject.in_reply_to_user_id,
-#         'favorited': tweepyObject.favorited,
-#         'source_url': tweepyObject.source_url, 
-#         'geo': tweepyObject.geo, 
-#         'in_reply_to_user_id_str': tweepyObject.in_reply_to_user_id_str, 
          'created_at': str(tweepyObject.created_at), 
-#         'in_reply_to_status_id_str': tweepyObject.in_reply_to_status_id_str
-#         ,'place': tweepyObject.place
     }
     
 def clean_stopWords(stopWords, removeStopWordsList):

@@ -15,9 +15,9 @@ positiveTweetList =[]
 #List of negative tweets
 negativeTweetList =[]
 #random Sample file with query and positive keys populated manually
-randomSampleFile = 'randomSampleTraining.data'
+randomSampleFile = 'cleanRandomSample.data'
 #retrieved tweets with query and positive keys populated manually
-retrievedTweetFile = 'retrievedTrainingData.data'
+retrievedTweetFile = 'cleanRetrieved.data'
 #Attribute array of tweet lengths.  [Positive, negative]
 tweetLength = []
 #Attribute array of tweet query term counts [Postivie, negative]
