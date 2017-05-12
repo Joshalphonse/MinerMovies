@@ -26,11 +26,11 @@ import json, numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn import svm
 
-training_File = 'labeled_tweets.txt'
+training_File = 'classificationTweetsTraining.data'
 query_terms_File = 'query.data'
 tweetsToClusterFile = 'cluster_tweets.txt'
 svmBestParametersFile = 'svmParameters.data'
-num_features = 2
+num_features = 3
 
 
 def classifyTrain():
@@ -80,7 +80,7 @@ def classifyTweets(tweetsToClassifyFile, forClustering):
     svmBestParameters = []
     with open(svmBestParametersFile) as file:
         svmParamFile = file.readlines()
-        svmBestParameters = json.loads(svmParamFile )    
+        svmBestParameters = json.loads(svmParamFile[0] )    
 
     trainingVectors = retrieveTrainingVectors()    
     
@@ -120,9 +120,16 @@ def classifyTweets(tweetsToClassifyFile, forClustering):
 def generateFeatureVector(tweetText, queryTerms):
     featureVector = np.zeros((len(tweetText),num_features), (int))
     row = 0
+    matchQuery = 0
     for tweet in tweetText:
-        featureVector[row, 0] = queryTermCount(tweet)
+        queryCount = queryTermCount(tweet, queryTerms)
+        if queryCount > 0:
+            matchQuery = 1
+        else:
+            matchQuery = 0
+        featureVector[row, 0] = queryCount
         featureVector[row, 1] = len(tweet)
+        featureVector[row, 2] = matchQuery
         row += 1
     return featureVector
     
@@ -130,7 +137,7 @@ def queryTermCount(tweetText, queryTerms):
     wordList = tweetText.split()
     count=0
     for word in wordList:
-        if word in queryTerms:
+        if word.lower() in queryTerms:
             count = count+1
     return count
 
@@ -162,5 +169,5 @@ def retrieveTrainingVectors():
     return [featureVector, classVector]
         
 if __name__ == '__main__':
-    classifyTrain()
-    classifyTweets('retrievedTweets.data', 'false')
+#    classifyTrain()
+    classifyTweets('retrievedTweets.data', 'true')
