@@ -25,9 +25,11 @@ classifyTweets(tweetsToClassifyFile, forClustering)
 import json, numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn import svm
+import glob, os
 
 training_File = 'classificationTweetsTraining.data'
 query_terms_File = 'query.data'
+query_terms_training_file = 'queryTraining.data'
 tweetsToClusterFile = 'cluster_tweets.txt'
 svmBestParametersFile = 'svmParameters.data'
 num_features = 3
@@ -42,6 +44,7 @@ def classifyTrain():
                         {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
     scores = ['precision', 'recall']
     svr = svm.SVC(C=1)
+#    print 'Starting Scores'
     for score in scores:
         clf = GridSearchCV(svr, tuned_parameters, cv=10, scoring='%s_macro' % score)
         clf.fit(trainingVectors[0], trainingVectors[1])
@@ -71,7 +74,7 @@ def classifyTweets(tweetsToClassifyFile, forClustering):
     for tweet in tweetsToClassify:
         tweetTextToClassify.append(tweet['text'])
     
-    queryTerms = populateQueryTerms();    
+    queryTerms = populateQueryTerms(query_terms_File);    
     
     #Generate numpy ndarrays for features
     featureVectorClassify = generateFeatureVector(tweetTextToClassify, queryTerms)
@@ -95,15 +98,21 @@ def classifyTweets(tweetsToClassifyFile, forClustering):
     if forClustering == 'true':
         
         # store positive predictd tweet text to array
-        predictedTweets = []
+#        predictedTweets = []
         i = 0
+        filelist=glob.glob(tweetsToClusterFile) 
+        for file in filelist: 
+            os.remove(file) 
         for prediction in y:
             if prediction == 1:
-                predictedTweets.append(tweetTextToClassify[i])
+                with open(tweetsToClusterFile, 'a') as file:
+                    file.write(json.dumps([i,tweetTextToClassify[i]]))
+                    file.write('\n')
+#                predictedTweets.append([i,tweetTextToClassify[i] + '\n'])
             i += 1    
         #   Save the predictions to file. 
-        with open(tweetsToClusterFile, 'w') as file:
-            file.write(json.dumps(predictedTweets))
+#        with open(tweetsToClusterFile, 'w') as file:
+#            file.write(json.dumps(predictedTweets))
     
     else:
         j = 0
@@ -131,6 +140,7 @@ def generateFeatureVector(tweetText, queryTerms):
         featureVector[row, 1] = len(tweet)
         featureVector[row, 2] = matchQuery
         row += 1
+
     return featureVector
     
 def queryTermCount(tweetText, queryTerms):
@@ -141,12 +151,17 @@ def queryTermCount(tweetText, queryTerms):
             count = count+1
     return count
 
-def populateQueryTerms():
+def populateQueryTerms(queryFile):
     #Read in Query Terms
-    with open(query_terms_File) as file:
+    queryTermsList = []
+    with open(queryFile) as file:
         queryFile = file.readlines()
         queryTerms = json.loads(queryFile[0])
-    return queryTerms
+    for query in queryTerms:
+        queryTermsSplit = query.split()
+        for term in queryTermsSplit:
+            queryTermsList.append(term)
+    return queryTermsList
     
 def retrieveTrainingVectors():
     #Read in tweets for training from list ['Class label, tweet text']
@@ -155,19 +170,23 @@ def retrieveTrainingVectors():
         tweetsFile = file.readlines()
         trainingTweets = json.loads(tweetsFile[0])
     
-    queryTerms = populateQueryTerms();
-            
+    queryTerms = populateQueryTerms(query_terms_training_file);
+#    print 'query terms: ', queryTerms
     #Generate numpy ndarrays for features and classes
     classVector = np.zeros((len(trainingTweets),), (int))
+    
     tweetText = []
     row = 0
     for tweet in trainingTweets:
         tweetText.append(tweet['text'])
         classVector[row] = tweet['positive']
         row += 1
+#    print 'class vector: ', classVector
     featureVector = generateFeatureVector(tweetText, queryTerms)  
+#    print 'Feature Vector: ', featureVector
     return [featureVector, classVector]
         
 if __name__ == '__main__':
 #    classifyTrain()
-    classifyTweets('retrievedTweets.data', 'true')
+#    classifyTweets('retrievedTweets.data', 'true')
+    classifyTweets('randomSampleTweets.data', 'false')
