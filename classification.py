@@ -188,5 +188,5 @@ def retrieveTrainingVectors():
         
 if __name__ == '__main__':
 #    classifyTrain()
-#    classifyTweets('retrievedTweets.data', 'true')
-    classifyTweets('randomSampleTweets.data', 'false')
+    classifyTweets('retrievedTweets.data', 'true')
+#    classifyTweets('randomSampleTweets.data', 'false')

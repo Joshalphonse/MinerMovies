@@ -14,7 +14,6 @@ Ouputs the clusters into files clusterVideoX.txt where X is the cluster number.
 
 """
 from sklearn.cluster import KMeans, AgglomerativeClustering
-from CollectTweets import removePunctuation
 import json
 import glob, os
 
@@ -43,9 +42,8 @@ def cluster_tweets(clusterType):
     
     #Read Tweets in
     tweets = []
-    with open(retrieved_tweets) as file:
-        tweetsFile = file.readlines()
-        tweets = json.loads(tweetsFile[0])
+    for line in open(retrieved_tweets).readlines():
+        tweets.append(json.loads(line))    
     
     # Generate an id (starting from 0) for each term in vocab
     vocab = {term: idx for idx, (term, freq) in enumerate(vocab.items())}
@@ -54,13 +52,11 @@ def cluster_tweets(clusterType):
     X = []
     for tweet_id, tweet_text in tweets:
         x = [0] * len(vocab)
-        tweet_text = removePunctuation(tweet_text)
         terms = [term for term in tweet_text.split() if len(term) > 2]
         for term in terms:
             if vocab.has_key(term):
                 x[vocab[term]] += 1
-        if not all(v == 0 for v in x):
-            X.append(x)
+        X.append(x)
     
     if clusterType == 1:
         km = KMeans(n_clusters = clusters, n_init = 100) # try 100 different initial centroids
@@ -83,8 +79,9 @@ def cluster_tweets(clusterType):
     clusterSize = []
 #    for cls, count in cluster_stat.items():
 #        print 'cluster {0} has {1} tweets'.format(cls, count)
-    for count in cluster_stat.items():
+    for cls, count in cluster_stat.items():
         clusterSize.append(count)
+#    print clusterSize.index(max(clusterSize))
     return clusterSize.index(max(clusterSize))
     
     
