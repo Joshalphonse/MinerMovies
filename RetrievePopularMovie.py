@@ -16,17 +16,17 @@ query_terms_File = 'query.data'
 
 def getPopularMovie():
     #Collect Tweets
-    #getMovieTitles()
-    #getTweets()
+    getMovieTitles()
+    getTweets()
     
     #Classify relative tweets
-    #classifyTweets('retrievedTweets.data', 'true')
+    classifyTweets('retrievedTweets.data', 'true')
     
     #Cluster Tweets
-    #largestCluster = cluster_tweets(clusterType)  
+    largestCluster = cluster_tweets(clusterType)  
     
     #Compute Most Popular movie
-    movieName = getPopularMovieName(1)
+    movieName = getPopularMovieName(largestCluster)
     print movieName
 
 def getPopularMovieName(cluster):
@@ -47,11 +47,13 @@ def getPopularMovieName(cluster):
     for term in queryTerms:
         terms = term.split()
         for word in terms:
-            if word.lower() in tweets:
-                return queryTerms[i]
+            if word != 'movie':
+                for tweet in tweets:
+                    tweetText = tweet.split()
+                    for text in tweetText:
+                        if word in text.lower():
+                            return queryTerms[i]
         i += 1
-
-
-    
+   
 if __name__ == '__main__':
     getPopularMovie()
